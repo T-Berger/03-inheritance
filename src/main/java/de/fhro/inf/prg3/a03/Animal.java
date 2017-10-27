@@ -2,10 +2,11 @@ package de.fhro.inf.prg3.a03;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+//import de.fhro.inf.prg3.a03.states.*;
 
 import java.util.Arrays;
 
-import static de.fhro.inf.prg3.a03.Animal.State.*;
+//import static de.fhro.inf.prg3.a03.Animal.State.*;
 
 /**
  * @author Peter Kurfer
@@ -15,10 +16,10 @@ public class Animal {
 
 	private static final Logger logger = LogManager.getLogger();
 
-	public enum State {SLEEPING, HUNGRY, DIGESTING, PLAYFUL, DEAD}
+	//public enum State {SLEEPING, HUNGRY, DIGESTING, PLAYFUL, DEAD}
 
-	private State state = State.SLEEPING;
-
+//	private State state = State.SLEEPING;
+	private State state;
 	// state durations (set via constructor), ie. the number of ticks in each state
 	private final int sleep;
 	private final int awake;
@@ -44,10 +45,14 @@ public class Animal {
 		this.awake = awake;
 		this.digest = digest;
 		this.collectionAmount = collectionAmount;
+		this.state = new Sleeping(this, sleep);
 
 		Arrays.sort(this.devours);
 	}
-
+	public void tick(){
+		this.state = state.tick();
+	}
+/*
 	public void tick(){
 		logger.info("tick()");
 		time++;
@@ -89,16 +94,16 @@ public class Animal {
 		logger.info(state.name());
 
 	}
-
+*/
 	public void feed(){
-		if (!state.equals(State.HUNGRY))
+		if (!isHungry())
 			throw new IllegalStateException("Can't stuff a cat...");
 
 		logger.info("You feed the cat...");
-		time = 0;
-		state = State.DIGESTING;
-
+		Hungry hungryState = (Hungry)state;
+		this.state = hungryState.feed();
 	}
+
 
 	public boolean devours(Animal other){
 		return Arrays.binarySearch(this.devours, other.genusSpecies) >= 0;
@@ -116,22 +121,35 @@ public class Animal {
 	}
 
 	public boolean isAsleep() {
-		return state.equals(State.SLEEPING);
+		return state instanceof Sleeping;
 	}
 
 	public boolean isPlayful() {
-		return state.equals(State.PLAYFUL);
+		return state instanceof Playful;
 	}
 
+
 	public boolean isHungry() {
-		return state.equals(State.HUNGRY);
+		return state instanceof Hungry;
 	}
 
 	public boolean isDigesting() {
-		return state.equals(State.DIGESTING);
+		return state instanceof DigestingState;
 	}
 
 	public boolean isDead() {
-		return state == State.DEAD;
+		return state instanceof Dead;
+	}
+
+	public int getAwake() {
+		return awake;
+	}
+
+	public int getSleep() {
+		return sleep;
+	}
+
+	public int getDigest() {
+		return digest;
 	}
 }
